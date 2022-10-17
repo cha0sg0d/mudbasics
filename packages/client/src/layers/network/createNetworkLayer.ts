@@ -34,7 +34,7 @@ export async function createNetworkLayer(config: GameConfig) {
   const actions = createActionSystem(world, txReduced$);
 
   // --- API ------------------------------------------------------------------------
-  function move(entity: number, position: Coord) {
+  function move(entity: string, position: Coord) {
     console.log(`systems`, systems);
     console.log(`move system contract`, systems["mudwar.system.move"]);
     // Do you need to cast to BigNumber?
