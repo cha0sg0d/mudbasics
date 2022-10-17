@@ -1,10 +1,12 @@
 import { createWorld } from "@latticexyz/recs";
 import { setupDevSystems } from "./setup";
-import { createActionSystem, setupMUDNetwork } from "@latticexyz/std-client";
+import { createActionSystem, defineCoordComponent, setupMUDNetwork } from "@latticexyz/std-client";
 import { defineLoadingStateComponent } from "./components";
 import { SystemTypes } from "contracts/types/SystemTypes";
 import { SystemAbis } from "contracts/types/SystemAbis.mjs";
 import { GameConfig, getNetworkConfig } from "./config";
+import { Coord } from "@latticexyz/utils";
+import { BigNumber } from "ethers";
 
 /**
  * The Network layer is the lowest layer in the client architecture.
@@ -19,6 +21,7 @@ export async function createNetworkLayer(config: GameConfig) {
   // --- COMPONENTS -----------------------------------------------------------------
   const components = {
     LoadingState: defineLoadingStateComponent(world),
+    Position: defineCoordComponent(world, { id: "Position", metadata: { contractId: "ember.component.position" } }),
   };
 
   // --- SETUP ----------------------------------------------------------------------
@@ -31,7 +34,12 @@ export async function createNetworkLayer(config: GameConfig) {
   const actions = createActionSystem(world, txReduced$);
 
   // --- API ------------------------------------------------------------------------
-
+  function move(entity: number, position: Coord) {
+    console.log(`systems`, systems);
+    console.log(`move system contract`, systems["mudwar.system.move"]);
+    // Do you need to cast to BigNumber?
+    systems["mudwar.system.move"].executeTyped(BigNumber.from(entity), position);
+  }
   // --- CONTEXT --------------------------------------------------------------------
   const context = {
     world,
@@ -42,7 +50,7 @@ export async function createNetworkLayer(config: GameConfig) {
     startSync,
     network,
     actions,
-    api: {},
+    api: { move },
     dev: setupDevSystems(world, encoders, systems),
   };
 
