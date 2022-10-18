@@ -1,13 +1,18 @@
 import { createWorld } from "@latticexyz/recs";
 import { setupDevSystems } from "./setup";
-import { createActionSystem, defineCoordComponent, setupMUDNetwork } from "@latticexyz/std-client";
+import {
+  createActionSystem,
+  defineCoordComponent,
+  defineStringComponent,
+  setupMUDNetwork,
+} from "@latticexyz/std-client";
 import { defineLoadingStateComponent } from "./components";
 import { SystemTypes } from "contracts/types/SystemTypes";
 import { SystemAbis } from "contracts/types/SystemAbis.mjs";
 import { GameConfig, getNetworkConfig } from "./config";
 import { Coord } from "@latticexyz/utils";
 import { BigNumber } from "ethers";
-
+1;
 /**
  * The Network layer is the lowest layer in the client architecture.
  * Its purpose is to synchronize the client components with the contract components.
@@ -22,6 +27,7 @@ export async function createNetworkLayer(config: GameConfig) {
   const components = {
     LoadingState: defineLoadingStateComponent(world),
     Position: defineCoordComponent(world, { id: "Position", metadata: { contractId: "ember.component.position" } }),
+    CarriedBy: defineStringComponent(world, { id: "CarriedBy", metadata: { contractId: "component.CarriedBy" } }),
   };
 
   // --- SETUP ----------------------------------------------------------------------
@@ -34,11 +40,13 @@ export async function createNetworkLayer(config: GameConfig) {
   const actions = createActionSystem(world, txReduced$);
 
   // --- API ------------------------------------------------------------------------
-  function move(entity: string, position: Coord) {
-    console.log(`systems`, systems);
-    console.log(`move system contract`, systems["mudwar.system.move"]);
-    // Do you need to cast to BigNumber?
-    systems["mudwar.system.move"].executeTyped(BigNumber.from(entity), position);
+  function move(coord: Coord) {
+    systems["mudwar.system.move"].executeTyped(BigNumber.from(network.connectedAddress.get()), coord);
+  }
+
+  function pickup(position: Coord) {
+    console.log(`picking up entities at ${position.x},${position.y}`);
+    systems["system.Catch"].executeTyped(position);
   }
   // --- CONTEXT --------------------------------------------------------------------
   const context = {
@@ -50,7 +58,7 @@ export async function createNetworkLayer(config: GameConfig) {
     startSync,
     network,
     actions,
-    api: { move },
+    api: { move, pickup },
     dev: setupDevSystems(world, encoders, systems),
   };
 

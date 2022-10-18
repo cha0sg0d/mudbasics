@@ -1,23 +1,35 @@
-import { pixelCoordToTileCoord, tileCoordToPixelCoord } from "@latticexyz/phaserx";
-import { defineComponentSystem } from "@latticexyz/recs";
-import { tile } from "@latticexyz/utils";
+import { pixelCoordToTileCoord } from "@latticexyz/phaserx";
+import { HasValue, runQuery } from "@latticexyz/recs";
 import { NetworkLayer } from "../../network";
-import { Sprites } from "../constants";
 import { PhaserLayer } from "../types";
 
 export function createInputSystem(network: NetworkLayer, phaser: PhaserLayer) {
-  //
   const {
+    world,
     scenes: {
-      Main: { input },
+      Main: {
+        input,
+        maps: {
+          Main: { tileWidth, tileHeight },
+        },
+      },
     },
   } = phaser;
   const {
-    api: { move },
-    network: { connectedAddress },
+    components: { Position },
   } = network;
-  input.click$.subscribe((e) => {
-    const tileCoord = pixelCoordToTileCoord({ x: e.worldX, y: e.worldY }, 16, 16);
-    move(connectedAddress.get()!, tileCoord);
+
+  const clickSub = input.click$.subscribe((p) => {
+    const pointer = p as Phaser.Input.Pointer;
+    const tilePos = pixelCoordToTileCoord({ x: pointer.worldX, y: pointer.worldY }, tileWidth, tileHeight);
+    if (runQuery([HasValue(Position, tilePos)]).size > 0) {
+      // Pick up if there is something to pick up
+      network.api.pickup(tilePos);
+    } else {
+      // otherwise move
+      network.api.move(tilePos);
+    }
   });
+
+  world.registerDisposer(() => clickSub?.unsubscribe());
 }

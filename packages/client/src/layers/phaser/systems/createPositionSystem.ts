@@ -5,7 +5,7 @@ import { Sprites } from "../constants";
 import { PhaserLayer } from "../types";
 
 export function createPositionSystem(network: NetworkLayer, phaser: PhaserLayer) {
-  //
+  console.log(`calling position system...`);
   const {
     world,
     components: { Position },
@@ -17,11 +17,12 @@ export function createPositionSystem(network: NetworkLayer, phaser: PhaserLayer)
     },
   } = phaser;
   defineComponentSystem(world, Position, (update) => {
-    //
+    console.log(`got update`, update);
     const sprite = objectPool.get(update.entity, "Sprite");
     const position = update.value[0];
     const texture = config.sprites[Sprites.Donkey];
     if (!position) {
+      console.log(`removing ${update.entity}`);
       return objectPool.remove(update.entity);
     }
     const pixelPosition = tileCoordToPixelCoord(position, 16, 16);

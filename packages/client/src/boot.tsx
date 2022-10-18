@@ -26,6 +26,7 @@ async function bootGame() {
   let initialBoot = true;
 
   async function rebootGame(): Promise<Layers> {
+    console.log("booting game...");
     // Remove react when starting to reboot layers, reboot react once layers are rebooted
     mountReact.current(false);
 

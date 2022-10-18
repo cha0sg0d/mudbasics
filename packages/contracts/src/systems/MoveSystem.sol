@@ -4,8 +4,9 @@ import "solecs/System.sol";
 import { IWorld } from "solecs/interfaces/IWorld.sol";
 import { IUint256Component } from "solecs/interfaces/IUint256Component.sol";
 import { IComponent } from "solecs/interfaces/IComponent.sol";
-import { getAddressById } from "solecs/utils.sol";
+import { getAddressById, addressToEntity } from "solecs/utils.sol";
 import { Coord, ID as PositionComponentID, PositionComponent } from "../components/PositionComponent.sol";
+import { ID as CarriedByComponentID, CarriedByComponent } from "../components/CarriedByComponent.sol";
 
 uint256 constant ID = uint256(keccak256("mudwar.system.move"));
 
@@ -14,6 +15,10 @@ contract MoveSystem is System {
 
   function execute(bytes memory arguments) public returns (bytes memory) {
     (uint256 entity, Coord memory position) = abi.decode(arguments, (uint256, Coord));
+
+    CarriedByComponent carriedBy = CarriedByComponent(getAddressById(components, CarriedByComponentID));
+    require(!carriedBy.has(addressToEntity(msg.sender)), "can not move while being carried");
+
     PositionComponent positionComponent = PositionComponent(getAddressById(components, PositionComponentID));
     positionComponent.set(entity, position);
   }
