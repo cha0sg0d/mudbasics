@@ -6,21 +6,21 @@ import { getAddressById } from "solecs/utils.sol";
 
 import { console } from "forge-std/console.sol";
 
-import { PositionComponent, ID as PositionComponentID, Coord } from "../components/PositionComponent.sol";
+import { BarePositionComponent, ID as BarePositionComponentID, Coord } from "../components/BarePositionComponent.sol";
 
-uint256 constant ID = uint256(keccak256("system.Move"));
+uint256 constant ID = uint256(keccak256("system.BareMove"));
 
-contract MoveSystem is System {
+contract BareMoveSystem is System {
   constructor(IWorld _world, address _components) System(_world, _components) {}
 
   function execute(bytes memory arguments) public returns (bytes memory) {
     (uint256 entity, Coord memory targetPosition) = abi.decode(arguments, (uint256, Coord));
 
-    PositionComponent position = PositionComponent(getAddressById(components, PositionComponentID));
+    BarePositionComponent position = BarePositionComponent(getAddressById(components, BarePositionComponentID));
     uint256 gas = gasleft();
     position.set(entity, targetPosition);
     uint256 gasUsed = gas - gasleft();
-    console.log("setting position component used %s gas", gasUsed);
+    console.log("setting bare position component used %s gas", gasUsed);
   }
 
   function executeTyped(uint256 entity, Coord memory targetPosition) public returns (bytes memory) {

@@ -15,4 +15,13 @@ contract MoveSystemTest is MudTest {
     assertEq(position.x, coord.x);
     assertEq(position.y, coord.y);
   }
+
+  function testSetVsUpdateCoord() public {
+    uint256 entity = 1;
+    Coord memory coord1 = Coord(12, 34);
+    Coord memory coord2 = Coord(13, 34);
+    uint256 gas = gasleft();
+    MoveSystem(system(MoveSystemID)).executeTyped(entity, coord1);
+    MoveSystem(system(MoveSystemID)).executeTyped(entity, coord2);
+  }
 }
